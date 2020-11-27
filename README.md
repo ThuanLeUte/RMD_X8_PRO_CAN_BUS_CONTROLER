@@ -1,0 +1,2 @@
+# RMD_X8_PRO_CAN_BUS_CONTROLER
+Control RMD X8 PRO motor by CAN
