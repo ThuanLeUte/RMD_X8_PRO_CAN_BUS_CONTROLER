@@ -13,6 +13,8 @@
 
 /* Includes ----------------------------------------------------------- */
 #include "x8_can.h"
+#include <mcp_can.h>
+#include <SPI.h>
 
 /* Private defines ---------------------------------------------------- */
 #ifdef ARDUNIO_SAMD_VARIANT_COMPLIANCE

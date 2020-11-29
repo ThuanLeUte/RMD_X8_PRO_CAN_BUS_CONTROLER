@@ -78,8 +78,8 @@ static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data)
   can_data[3] = msg_encode_offset_cmd.data3;
   can_data[4] = msg_encode_offset_cmd.data4;
   can_data[5] = msg_encode_offset_cmd.data5;
-  can_data[6] = msg_encode_offset_cmd.encode_offset_high;
-  can_data[7] = msg_encode_offset_cmd.encode_offset_low;
+  can_data[6] = msg_encode_offset_cmd.encode_offset_low;
+  can_data[7] = msg_encode_offset_cmd.encode_offset_high;
 }
 
 /**
