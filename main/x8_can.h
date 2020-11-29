@@ -25,6 +25,15 @@
 /**
  * @brief Can message handler enum
  */
+typedef struct x8_can
+{
+  void (*cansend) (uint16_t msg_id, uint8_t * buffer);
+}
+x8_can_t;
+
+/**
+ * @brief Can message handler enum
+ */
 typedef enum
 {
   X8_MSG_ENCODER_OFFSET_CMD,
@@ -35,6 +44,16 @@ typedef enum
   /*----------------------------------------------------------------- */
 }
 x8_can_msg_handler_send_type_t;
+
+/**
+ * @brief Can message handler enum
+ */
+typedef enum
+{
+  X8_CLOCKWISE,
+  X8_COUNTER_CLOCKWISE
+}
+x8_motor_dir_type_t;
 
 /**
  * @brief Can message encode offset command
@@ -76,37 +95,30 @@ extern x8_can_msg_position_control_cmd_t   msg_position_control_cmd;
 
 /* Public function prototypes ----------------------------------------- */
 /**
- * @brief  Can pack message encode offset command
+ * @brief       Can send position control cmd
  *
- * @param[in]   can_tx_data   Pointer to can tx data
+ * @param[in]   me              Pointer to can handler
+ *              pos_ctrl        Position control
+ *              speed_limited   Speed limited
+ *              dir             Direction
  *
  * @attention   None
  *
  * @return      None
  */
-void x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data);
+void x8_can_send_position_control_cmd(x8_can_t *me ,uint16_t pos_ctrl, uint16_t speed_limited, x8_motor_dir_type_t dir);
 
 /**
- * @brief  Can pack message position control command
+ * @brief       Can send encoder offset cmd
  *
- * @param[in]   can_tx_data   Pointer to can tx data
- *
- * @attention   None
- *
- * @return      None
- */
-void x8_can_pack_msg_position_control_cmd(uint8_t *can_data);
-
-/**
- * @brief  Can send msg
- *
- * @param[in]   msg_handler   Message handler
+ * @param[in]   me              Pointer to can handler
+ *              encoder_offset  Encoder offset
  *
  * @attention   None
  *
  * @return      None
  */
-void x8_can_send_msg(x8_can_msg_handler_send_type_t msg_handler);
+void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset);
 
 #endif // __X8_CAN_H
 
