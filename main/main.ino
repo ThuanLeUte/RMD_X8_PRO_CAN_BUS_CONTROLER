@@ -1,19 +1,18 @@
 /**
- * @file       zigbee_webee.c
+ * @file       main.c
  * @copyright  Copyright (C) 2020 ThuanLe. All rights reserved.
  * @license    This project is released under the ThuanLe License.
  * @version    1.0.0
  * @date       2020-11-27
  * @author     Thuan Le
- * @brief      System module support control RMD X8 PRO motor via CAN BUS 
- *             and Arduino
+ * @brief      Main file support control RMD X8 PRO motor via CAN BUS
+ *             Arduino and Module Arduino CAN BUS Shield MCP2515
  * @note       None
  * @example    None
  */
 
 /* Includes ----------------------------------------------------------- */
-#include <mcp_can.h>
-#include <SPI.h>
+#include "x8_can.h"
 
 /* Private defines ---------------------------------------------------- */
 #ifdef ARDUNIO_SAMD_VARIANT_COMPLIANCE
@@ -33,7 +32,6 @@
 #define LED2                    (8)
 #define LED3                    (7)
 #define STEP_VALUE              (50)
-#define SPI_CS_PIN              (10)
 
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
