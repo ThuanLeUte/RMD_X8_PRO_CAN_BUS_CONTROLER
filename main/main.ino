@@ -53,9 +53,9 @@ static float    m_float_data_value      = 0;
 static void uart_receive_and_execute(void);
 static void bsp_x8_can_send(uint16_t msg_id, uint8_t *buffer);
 static void x8_can_init(void);
+static void btn_check(void);
 
 /* Function definitions ----------------------------------------------- */
-
 void setup()
 {
   SERIAL.begin(115200);
@@ -80,33 +80,8 @@ void setup()
 void loop()
 {
   uart_receive_and_execute();
-  if (digitalRead(UP) == LOW)
-  {
-    m_rmd_x8_postion += STEP_VALUE;
-    if (m_rmd_x8_postion > 35999)
-    {
-      m_rmd_x8_postion = max(m_rmd_x8_postion - 35999, 0);
-    }
-    if (m_rmd_x8_postion < 0)
-    {
-      m_rmd_x8_postion = 0;
-    }
-    x8_can_send_position_control_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
-  }
 
-  if (digitalRead(DOWN) == LOW)
-  {
-    m_rmd_x8_postion -= STEP_VALUE;
-    if (m_rmd_x8_postion >= 36000)
-    {
-      m_rmd_x8_postion = 35999;
-    }
-    if (m_rmd_x8_postion < 0)
-    {
-      m_rmd_x8_postion = max(m_rmd_x8_postion + 35999, 35999);
-    }
-    x8_can_send_position_control_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
-  }
+  btn_check();
 }
 
 /* Private function definitions --------------------------------------- */
@@ -164,6 +139,47 @@ static void uart_receive_and_execute(void)
     }
   }
 }
+
+/**
+ * @brief       Button check
+ *
+ * @param[in]   None
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void btn_check(void)
+{
+  if (digitalRead(UP) == LOW)
+  {
+    m_rmd_x8_postion += STEP_VALUE;
+    if (m_rmd_x8_postion > 35999)
+    {
+      m_rmd_x8_postion = max(m_rmd_x8_postion - 35999, 0);
+    }
+    if (m_rmd_x8_postion < 0)
+    {
+      m_rmd_x8_postion = 0;
+    }
+    x8_can_send_position_control_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
+  }
+
+  if (digitalRead(DOWN) == LOW)
+  {
+    m_rmd_x8_postion -= STEP_VALUE;
+    if (m_rmd_x8_postion >= 36000)
+    {
+      m_rmd_x8_postion = 35999;
+    }
+    if (m_rmd_x8_postion < 0)
+    {
+      m_rmd_x8_postion = max(m_rmd_x8_postion + 35999, 35999);
+    }
+    x8_can_send_position_control_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
+  }
+}
+
 
 /**
  * @brief       Can message send
