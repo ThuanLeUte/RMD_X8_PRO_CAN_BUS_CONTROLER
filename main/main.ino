@@ -44,10 +44,13 @@
 /* Private variables -------------------------------------------------- */
 MCP_CAN CAN(SPI_CS_PIN);
 static x8_can_t m_x8_can;
-
-static long m_rmd_x8_postion = 0;
+static long     m_rmd_x8_postion        = 0;
+static String   m_uart_data_receive     = "";
+static boolean  m_uart_string_complete  = false;
+static float    m_float_data_value      = 0;
 
 /* Private function prototypes ---------------------------------------- */
+static void uart_receive_and_execute(void);
 static void bsp_x8_can_send(uint16_t msg_id, uint8_t *buffer);
 static void x8_can_init(void);
 
@@ -76,6 +79,7 @@ void setup()
 
 void loop()
 {
+  uart_receive_and_execute();
   if (digitalRead(UP) == LOW)
   {
     m_rmd_x8_postion += STEP_VALUE;
@@ -105,11 +109,86 @@ void loop()
   }
 }
 
+/* Private function definitions --------------------------------------- */
+/**
+ * @brief       Uart receive data and execute
+ *
+ * @param[in]   None
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void uart_receive_and_execute(void)
+{
+  while (SERIAL.available()) // Receive data from computer
+  {
+    char data = (char)SERIAL.read();
+    m_uart_data_receive += data;
+
+    if (data == '\n')
+    {
+      m_uart_string_complete = true;
+    }
+
+    if (m_uart_string_complete)
+    {
+      m_uart_string_complete = false;
+      m_float_data_value = m_uart_data_receive.toFloat();
+
+      // Check data recieve from uart
+      if (m_float_data_value > 0)
+      {
+        if (m_float_data_value > 35999)
+        {
+          m_float_data_value = 35999;
+        }
+        x8_can_send_position_control_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
+      }
+      else
+      {
+        if (m_float_data_value < -35999)
+        {
+          m_float_data_value = 35999;
+        }
+        else
+        {
+          m_float_data_value = - m_float_data_value;
+        }
+        x8_can_send_position_control_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
+      }
+      
+      SERIAL.println(m_uart_data_receive);
+      SERIAL.println(m_float_data_value);
+      m_uart_data_receive = "";
+    }
+  }
+}
+
+/**
+ * @brief       Can message send
+ *
+ * @param[in]   msg_id   Message id
+ *              buffer   Pointer to buffer
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
 static void bsp_x8_can_send(uint16_t msg_id, uint8_t *buffer)
 {
   CAN.sendMsgBuf(msg_id, 0, 8, buffer);
 }
 
+/**
+ * @brief       Can message init
+ *
+ * @param[in]   None
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
 static void x8_can_init(void)
 {
   m_x8_can.cansend = bsp_x8_can_send;

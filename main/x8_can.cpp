@@ -22,11 +22,11 @@
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
-uint8_t can_tx_data[8];
-x8_can_msg_encode_offset_cmd_type_t msg_encode_offset_cmd;
-x8_can_msg_position_control_cmd_t   msg_position_control_cmd;
-
 /* Private variables -------------------------------------------------- */
+static uint8_t can_tx_data[8];
+static x8_can_msg_encode_offset_cmd_type_t msg_encode_offset_cmd;
+static x8_can_msg_position_control_cmd_t   msg_position_control_cmd;
+
 /* Private function prototypes ---------------------------------------- */
 static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_control_cmd(uint8_t *can_data);

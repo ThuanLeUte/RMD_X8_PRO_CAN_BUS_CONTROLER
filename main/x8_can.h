@@ -87,10 +87,6 @@ x8_can_msg_position_control_cmd_t;
 
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
-extern uint8_t can_tx_data[8];
-extern x8_can_msg_encode_offset_cmd_type_t msg_encode_offset_cmd;
-extern x8_can_msg_position_control_cmd_t   msg_position_control_cmd;
-
 /* Public function prototypes ----------------------------------------- */
 /**
  * @brief       Can send position control cmd
