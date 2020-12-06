@@ -118,7 +118,7 @@ static void uart_receive_and_execute(void)
         {
           m_float_data_value = 35999;
         }
-        x8_can_send_position_control_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
+        x8_can_send_position_ctrl_4_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
       }
       else
       {
@@ -130,7 +130,7 @@ static void uart_receive_and_execute(void)
         {
           m_float_data_value = - m_float_data_value;
         }
-        x8_can_send_position_control_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
+        x8_can_send_position_ctrl_4_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
       }
       
       SERIAL.println(m_uart_data_receive);
@@ -162,7 +162,7 @@ static void btn_check(void)
     {
       m_rmd_x8_postion = 0;
     }
-    x8_can_send_position_control_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
+    x8_can_send_position_ctrl_4_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
   }
 
   if (digitalRead(DOWN) == LOW)
@@ -176,7 +176,7 @@ static void btn_check(void)
     {
       m_rmd_x8_postion = max(m_rmd_x8_postion + 35999, 35999);
     }
-    x8_can_send_position_control_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
+    x8_can_send_position_ctrl_4_cmd(&m_x8_can, m_rmd_x8_postion, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
   }
 }
 
