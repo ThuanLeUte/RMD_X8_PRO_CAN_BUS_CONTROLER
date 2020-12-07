@@ -41,11 +41,18 @@
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
+/* Private constan ---------------------------------------------------- */
+static const String CLOCKWISE_CMD          = "TL";
+static const String COUNTER_CLOCKWISE_CMD  = "TR";
+static const String SET_SPEED              = "SP";
+
 /* Private variables -------------------------------------------------- */
 MCP_CAN CAN(SPI_CS_PIN);
 static x8_can_t m_x8_can;
 static long     m_rmd_x8_postion        = 0;
 static String   m_uart_data_receive     = "";
+static String   m_uart_cmd              = "";
+static String   m_uart_data             = "";
 static boolean  m_uart_string_complete  = false;
 static float    m_float_data_value      = 0;
 
@@ -109,32 +116,31 @@ static void uart_receive_and_execute(void)
     if (m_uart_string_complete)
     {
       m_uart_string_complete = false;
-      m_float_data_value = m_uart_data_receive.toFloat();
-
-      // Check data recieve from uart
-      if (m_float_data_value > 0)
-      {
-        if (m_float_data_value > 35999)
-        {
-          m_float_data_value = 35999;
-        }
-        x8_can_send_position_ctrl_4_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_CLOCKWISE);
-      }
-      else
-      {
-        if (m_float_data_value < -35999)
-        {
-          m_float_data_value = 35999;
-        }
-        else
-        {
-          m_float_data_value = - m_float_data_value;
-        }
-        x8_can_send_position_ctrl_4_cmd(&m_x8_can, m_float_data_value, RMD_X8_SPEED_LIMITED, X8_COUNTER_CLOCKWISE);
-      }
-      
       SERIAL.println(m_uart_data_receive);
+
+      m_uart_cmd = m_uart_data_receive.substring(0, 2);
+      m_uart_data = m_uart_data_receive.substring(3);
+      m_float_data_value = m_uart_data.toFloat();
+      SERIAL.println(m_uart_cmd);
+      SERIAL.println(m_uart_data);
       SERIAL.println(m_float_data_value);
+
+      if (CLOCKWISE_CMD == m_uart_cmd)
+      {
+        SERIAL.println("Set motor run clockwise");
+        x8_can_send_position_ctrl_1_cmd(&m_x8_can, m_float_data_value);
+      }
+      else if (COUNTER_CLOCKWISE_CMD == m_uart_cmd)
+      {
+        SERIAL.println("Set motor run counter clockwise");
+        x8_can_send_position_ctrl_1_cmd(&m_x8_can, -m_float_data_value);
+      }
+      else if (SET_SPEED == m_uart_cmd)
+      {
+        SERIAL.println("Set speed for motor run");
+        x8_can_send_speed_close_loop_cmd(&m_x8_can, m_float_data_value);
+      } 
+
       m_uart_data_receive = "";
     }
   }
