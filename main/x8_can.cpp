@@ -47,16 +47,18 @@
 /* Private variables -------------------------------------------------- */
 static uint8_t can_tx_data[8];
 static x8_can_msg_write_encode_offset_cmd_t msg_write_encode_offset_cmd;
+static x8_can_msg_speed_close_loop_cmd_t    msg_speed_close_loop_cmd;
+static x8_can_msg_torque_close_loop_cmd_t   msg_torque_close_loop_cmd;
 static x8_can_msg_position_ctrl_1_cmd_t     msg_position_ctrl_1_cmd;
 static x8_can_msg_position_ctrl_2_cmd_t     msg_position_ctrl_2_cmd;
 static x8_can_msg_position_ctrl_3_cmd_t     msg_position_ctrl_3_cmd;
 static x8_can_msg_position_ctrl_4_cmd_t     msg_position_ctrl_4_cmd;
-static x8_can_msg_speed_close_loop_cmd_t    msg_speed_close_loop_cmd;
 
 
 /* Private function prototypes ---------------------------------------- */
 static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_speed_close_loop_cmd(uint8_t *can_data);
+static void m_x8_can_pack_msg_torque_close_loop_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_1_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_2_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_3_cmd(uint8_t *can_data);
@@ -74,7 +76,17 @@ void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset)
   m_x8_can_send_msg(me, X8_MSG_WRITE_ENCODER_OFFSET_CMD);
 }
 
-void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint16_t speed)
+void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque)
+{
+  // Torque close loop
+  msg_torque_close_loop_cmd.torque_current_low   = torque;
+  msg_torque_close_loop_cmd.torque_current_high  = torque >> 8;
+
+  // Can send message
+  m_x8_can_send_msg(me, X8_MSG_TORQUE_CLOSED_LOOP_CMD);
+}
+
+void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed)
 {
   // Speed close loop
   msg_speed_close_loop_cmd.speed_ctrl_lowest   = speed;
@@ -167,6 +179,27 @@ static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data)
 }
 
 /**
+ * @brief       Can pack message torque close loop command
+ *
+ * @param[in]   can_tx_data   Pointer to can tx data
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void m_x8_can_pack_msg_torque_close_loop_cmd(uint8_t *can_data)
+{
+  can_data[0] = msg_torque_close_loop_cmd.cmd_byte = RMD_X8_TORQUE_CLOSED_LOOP_CMD;
+  can_data[1] = msg_torque_close_loop_cmd.data1;
+  can_data[2] = msg_torque_close_loop_cmd.data2;
+  can_data[3] = msg_torque_close_loop_cmd.data3;
+  can_data[4] = msg_torque_close_loop_cmd.torque_current_low;
+  can_data[5] = msg_torque_close_loop_cmd.torque_current_high;
+  can_data[6] = msg_torque_close_loop_cmd.data6;
+  can_data[7] = msg_torque_close_loop_cmd.data7;
+}
+
+/**
  * @brief       Can pack message speed close loop command
  *
  * @param[in]   can_tx_data   Pointer to can tx data
@@ -186,6 +219,7 @@ static void m_x8_can_pack_msg_speed_close_loop_cmd(uint8_t *can_data)
   can_data[6] = msg_speed_close_loop_cmd.speed_ctrl_high;
   can_data[7] = msg_speed_close_loop_cmd.speed_ctrl_highest;
 }
+
 /**
  * @brief       Can pack message position control command 1
  *

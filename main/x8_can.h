@@ -91,7 +91,23 @@ typedef struct
 x8_can_msg_write_encode_offset_cmd_t;
 
 /**
- * @brief Can message speed close loop command 4
+ * @brief Can message torque close loop command
+ */
+typedef struct
+{
+  uint8_t cmd_byte;
+  uint8_t data1;
+  uint8_t data2;
+  uint8_t data3;
+  uint8_t torque_current_low;
+  uint8_t torque_current_high;
+  uint8_t data6;
+  uint8_t data7;
+}
+x8_can_msg_torque_close_loop_cmd_t;
+
+/**
+ * @brief Can message speed close loop command
  */
 typedef struct
 {
@@ -185,6 +201,18 @@ x8_can_msg_position_ctrl_4_cmd_t;
 void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset);
 
 /**
+ * @brief       Can send torque close loop cmd
+ *
+ * @param[in]   me              Pointer to can handler
+ *              torque          Torque
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque);
+
+/**
  * @brief       Can send speed close loop cmd
  *
  * @param[in]   me              Pointer to can handler
@@ -194,7 +222,7 @@ void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset);
  *
  * @return      None
  */
-void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint16_t speed);
+void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed);
 
 /**
  * @brief       Can send position control cmd 1
