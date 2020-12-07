@@ -51,10 +51,12 @@ static x8_can_msg_position_ctrl_1_cmd_t     msg_position_ctrl_1_cmd;
 static x8_can_msg_position_ctrl_2_cmd_t     msg_position_ctrl_2_cmd;
 static x8_can_msg_position_ctrl_3_cmd_t     msg_position_ctrl_3_cmd;
 static x8_can_msg_position_ctrl_4_cmd_t     msg_position_ctrl_4_cmd;
+static x8_can_msg_speed_close_loop_cmd_t    msg_speed_close_loop_cmd;
 
 
 /* Private function prototypes ---------------------------------------- */
 static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data);
+static void m_x8_can_pack_msg_speed_close_loop_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_1_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_2_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_3_cmd(uint8_t *can_data);
@@ -62,6 +64,28 @@ static void m_x8_can_pack_msg_position_ctrl_4_cmd(uint8_t *can_data);
 static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_handler);
 
 /* Function definitions ----------------------------------------------- */
+void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset)
+{
+  // Encoder offset
+  msg_write_encode_offset_cmd.encode_offset_low  = encoder_offset;
+  msg_write_encode_offset_cmd.encode_offset_high = encoder_offset >> 8;
+
+  // Can send message
+  m_x8_can_send_msg(me, X8_MSG_WRITE_ENCODER_OFFSET_CMD);
+}
+
+void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint16_t speed)
+{
+  // Speed close loop
+  msg_speed_close_loop_cmd.speed_ctrl_lowest   = speed;
+  msg_speed_close_loop_cmd.speed_ctrl_low      = speed >> 8;
+  msg_speed_close_loop_cmd.speed_ctrl_high     = speed >> 16;
+  msg_speed_close_loop_cmd.speed_ctrl_highest  = speed >> 24;
+
+  // Can send message
+  m_x8_can_send_msg(me, X8_MSG_SPEED_CLOSED_LOOP_CMD);
+}
+
 void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl)
 {
   // Motor positon control
@@ -120,16 +144,6 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t 
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_4_CMD);
 }
 
-void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset)
-{
-  // Encoder offset
-  msg_write_encode_offset_cmd.encode_offset_low  = encoder_offset;
-  msg_write_encode_offset_cmd.encode_offset_high = encoder_offset >> 8;
-
-  // Can send message
-  m_x8_can_send_msg(me, X8_MSG_WRITE_ENCODER_OFFSET_CMD);
-}
-
 /* Private function definitions --------------------------------------- */
 /**
  * @brief       Can pack message encode offset command
@@ -152,6 +166,26 @@ static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data)
   can_data[7] = msg_write_encode_offset_cmd.encode_offset_high;
 }
 
+/**
+ * @brief       Can pack message speed close loop command
+ *
+ * @param[in]   can_tx_data   Pointer to can tx data
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void m_x8_can_pack_msg_speed_close_loop_cmd(uint8_t *can_data)
+{
+  can_data[0] = msg_speed_close_loop_cmd.cmd_byte = RMD_X8_SPEED_CLOSED_LOOP_CMD;
+  can_data[1] = msg_speed_close_loop_cmd.data1;
+  can_data[2] = msg_speed_close_loop_cmd.data2;
+  can_data[3] = msg_speed_close_loop_cmd.data3;
+  can_data[4] = msg_speed_close_loop_cmd.speed_ctrl_lowest;
+  can_data[5] = msg_speed_close_loop_cmd.speed_ctrl_low;
+  can_data[6] = msg_speed_close_loop_cmd.speed_ctrl_high;
+  can_data[7] = msg_speed_close_loop_cmd.speed_ctrl_highest;
+}
 /**
  * @brief       Can pack message position control command 1
  *
@@ -255,6 +289,12 @@ static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_h
     break;
   }
 
+  case X8_MSG_SPEED_CLOSED_LOOP_CMD:
+  {
+    m_x8_can_pack_msg_speed_close_loop_cmd(can_tx_data);
+    break;
+  }
+
   case X8_MSG_POSITION_CTRL_1_CMD:
   {
     m_x8_can_pack_msg_position_ctrl_1_cmd(can_tx_data);
@@ -278,7 +318,6 @@ static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_h
     m_x8_can_pack_msg_position_ctrl_4_cmd(can_tx_data);
     break;
   }
-
 
   default:
     break;
