@@ -216,7 +216,7 @@ void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque);
  * @brief       Can send speed close loop cmd
  *
  * @param[in]   me              Pointer to can handler
- *              speed           Speed
+ *              speed           Speed (1 => 1 rpm)
  *
  * @attention   None
  *
@@ -240,7 +240,7 @@ void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl);
  * @brief       Can send position control cmd 2
  *
  * @param[in]   me              Pointer to can handler
- *              pos_ctrl        Position control
+ *              pos_ctrl        Position control (1=> 1 degree; 360 => 360 degree (1 circle))
  *              speed_limited   Speed limited
  *
  * @attention   None
@@ -253,7 +253,7 @@ void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, uint
  * @brief       Can send position control cmd 3
  *
  * @param[in]   me              Pointer to can handler
- *              pos_ctrl        Position control
+ *              pos_ctrl        Position control (1=> 1 degree; 360 => 360 degree (1 circle))
  *              dir             Direction
  *
  * @attention   None

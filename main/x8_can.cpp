@@ -88,6 +88,9 @@ void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque)
 
 void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed)
 {
+  // Covert 0.01dps/LSB to rpm
+  speed = speed * 36000;
+
   // Speed close loop
   msg_speed_close_loop_cmd.speed_ctrl_lowest   = speed;
   msg_speed_close_loop_cmd.speed_ctrl_low      = speed >> 8;
@@ -100,6 +103,9 @@ void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed)
 
 void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl)
 {
+  // Convert 0.01 degree to 1 degree
+  pos_ctrl = pos_ctrl * 100;
+
   // Motor positon control
   msg_position_ctrl_1_cmd.pos_ctrl_lowest   = pos_ctrl;
   msg_position_ctrl_1_cmd.pos_ctrl_low      = pos_ctrl >> 8;
@@ -112,6 +118,12 @@ void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl)
 
 void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, uint32_t pos_ctrl)
 {
+  // Covert 0.01dps/LSB to rpm
+  speed_limited = speed_limited * 36000;
+
+  // Convert 0.01 degree to 1 degree
+  pos_ctrl = pos_ctrl * 100;
+
   // Motor speed limited
   msg_position_ctrl_2_cmd.speed_limited_low  = speed_limited;
   msg_position_ctrl_2_cmd.speed_limited_high = speed_limited >> 8;
