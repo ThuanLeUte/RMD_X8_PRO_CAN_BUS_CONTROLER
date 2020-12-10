@@ -61,6 +61,7 @@ static void uart_receive_and_execute(void);
 static void bsp_x8_can_send(uint16_t msg_id, uint8_t *buffer);
 static void x8_can_init(void);
 static void btn_check(void);
+static void m_can_receive(void);
 
 /* Function definitions ----------------------------------------------- */
 void setup()
@@ -87,6 +88,7 @@ void setup()
 void loop()
 {
   uart_receive_and_execute();
+  m_can_receive();
 
   btn_check();
 }
@@ -142,6 +144,62 @@ static void uart_receive_and_execute(void)
       } 
 
       m_uart_data_receive = "";
+    }
+  }
+}
+
+/**
+ * @brief       CAN receive data
+ *
+ * @param[in]   None
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void m_can_receive(void)
+{
+  uint8_t can_rx_len = 0;
+  uint8_t can_rx_data[8];
+  x8_motor_status_t motor_status;
+
+  // Check CAN data comming
+  if (CAN_MSGAVAIL == CAN.checkReceive())
+  {
+    SERIAL.println("Can msg receive");
+
+    // Read data and length
+    CAN.readMsgBuf(&can_rx_len, can_rx_data);
+
+    switch (can_rx_data[0])
+    {
+    case RMD_X8_READ_MOTOR_STATUS_2_CMD:
+    case RMD_X8_TORQUE_CLOSED_LOOP_CMD:
+    case RMD_X8_SPEED_CLOSED_LOOP_CMD:
+    case RMD_X8_POSITION_CTRL_1_CMD:
+    case RMD_X8_POSITION_CTRL_2_CMD:
+    case RMD_X8_POSITION_CTRL_3_CMD:
+    case RMD_X8_POSITION_CTRL_4_CMD:
+    {
+      // Get motor status
+      x8_can_get_motor_status(can_rx_data, &motor_status);
+
+      SERIAL.print("Motor temperature: ");
+      SERIAL.println(motor_status.temperature);
+
+      SERIAL.print("Motor torqe current: ");
+      SERIAL.println(motor_status.torque_current);
+
+      SERIAL.print("Motor speed: ");
+      SERIAL.println(motor_status.speed);
+
+      SERIAL.print("Motor encoder: ");
+      SERIAL.println(motor_status.encoder);
+      break;
+    }
+    
+    default:
+      break;
     }
   }
 }

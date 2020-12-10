@@ -19,6 +19,32 @@
 #include <stdint.h>
 
 /* Public defines ----------------------------------------------------- */
+#define RMD_X8_CAN_MSG_ID                       (0x141)
+
+#define RMD_X8_READ_PID_DATA_CMD                (0x30)
+#define RMD_X8_WRITE_PID_TO_RAM_CMD             (0x31)
+#define RMD_X8_WRITE_PID_TO_ROM_CMD             (0x32)
+#define RMD_X8_READ_ACCELERATION_CMD            (0x33)
+#define RMD_X8_WRITE_ACCELERATION_CMD           (0x34)
+#define RMD_X8_READ_ENCODE_DATA_CMD             (0x90)
+#define RMD_X8_WRITE_ENCODER_OFFSET_CMD         (0x91)
+#define RMD_X8_WRITE_CURRENT_POSITION_CMD       (0x19)
+#define RMD_X8_READ_MULTI_TURNS_ANGLE_CMD       (0x92)
+#define RMD_X8_READ_SINGLE_CIRCLE_ANGLE_CMD     (0x94)
+#define RMD_X8_READ_MOTOR_STATUS_CMD            (0x9A)
+#define RMD_X8_CLEAR_MOTOR_ERROR_FLAG_CMD       (0x9B)
+#define RMD_X8_READ_MOTOR_STATUS_2_CMD          (0x9C)
+#define RMD_X8_READ_MOTOR_STATUS_3_CMD          (0x9D)
+#define RMD_X8_MOTOR_OFF_CMD                    (0x80)
+#define RMD_X8_MOTOR_STOP_CMD                   (0x81)
+#define RMD_X8_MOTOR_RUNNING_CMD                (0x88)
+#define RMD_X8_TORQUE_CLOSED_LOOP_CMD           (0xA1)
+#define RMD_X8_SPEED_CLOSED_LOOP_CMD            (0xA2)
+#define RMD_X8_POSITION_CTRL_1_CMD              (0xA3)
+#define RMD_X8_POSITION_CTRL_2_CMD              (0xA4)
+#define RMD_X8_POSITION_CTRL_3_CMD              (0xA5)
+#define RMD_X8_POSITION_CTRL_4_CMD              (0xA6)
+
 /* Public enumerate/structure ----------------------------------------- */
 /**
  * @brief Can message handler enum
@@ -73,6 +99,18 @@ typedef enum
   X8_COUNTER_CLOCKWISE
 }
 x8_motor_dir_type_t;
+
+/**
+ * @brief Motor direction enum
+ */
+typedef struct
+{
+  uint8_t   temperature;
+  uint16_t  torque_current;
+  uint16_t  speed;
+  uint16_t  encoder;
+}
+x8_motor_status_t;
 
 /**
  * @brief Can message encode offset command
@@ -185,6 +223,22 @@ typedef struct
 }
 x8_can_msg_position_ctrl_4_cmd_t;
 
+/**
+ * @brief Can receive message motor status
+ */
+typedef struct
+{
+  uint8_t cmd_byte;
+  uint8_t temperature;
+  uint8_t iq_low;
+  uint8_t iq_high;
+  uint8_t speed_low;
+  uint8_t speed_high;
+  uint8_t encoder_low;
+  uint8_t encoder_high;
+}
+x8_can_receive_msg_motor_status_t;
+
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
@@ -275,6 +329,18 @@ void x8_can_send_position_ctrl_3_cmd(x8_can_t *me , uint16_t pos_ctrl,  x8_motor
  * @return      None
  */
 void x8_can_send_position_ctrl_4_cmd(x8_can_t *me ,uint16_t pos_ctrl, uint16_t speed_limited, x8_motor_dir_type_t dir);
+
+/**
+ * @brief       Get motor status
+ *
+ * @param[in]   can_rx_data       Pointer to can rx data
+ *              motor_status      Pointer to motor status structure
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_status);
 
 #endif // __X8_CAN_H
 

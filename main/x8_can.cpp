@@ -15,37 +15,14 @@
 #include "x8_can.h"
 
 /* Private defines ---------------------------------------------------- */
-#define RMD_X8_CAN_MSG_ID                       (0x141)
-
-#define RMD_X8_READ_PID_DATA_CMD                (0x30)
-#define RMD_X8_WRITE_PID_TO_RAM_CMD             (0x31)
-#define RMD_X8_WRITE_PID_TO_ROM_CMD             (0x32)
-#define RMD_X8_READ_ACCELERATION_CMD            (0x33)
-#define RMD_X8_WRITE_ACCELERATION_CMD           (0x34)
-#define RMD_X8_READ_ENCODE_DATA_CMD             (0x90)
-#define RMD_X8_WRITE_ENCODER_OFFSET_CMD         (0x91)
-#define RMD_X8_WRITE_CURRENT_POSITION_CMD       (0x19)
-#define RMD_X8_READ_MULTI_TURNS_ANGLE_CMD       (0x92)
-#define RMD_X8_READ_SINGLE_CIRCLE_ANGLE_CMD     (0x94)
-#define RMD_X8_READ_MOTOR_STATUS_CMD            (0x9A)
-#define RMD_X8_CLEAR_MOTOR_ERROR_FLAG_CMD       (0x9B)
-#define RMD_X8_READ_MOTOR_STATUS_2_CMD          (0x9C)
-#define RMD_X8_READ_MOTOR_STATUS_3_CMD          (0x9D)
-#define RMD_X8_MOTOR_OFF_CMD                    (0x80)
-#define RMD_X8_MOTOR_STOP_CMD                   (0x81)
-#define RMD_X8_MOTOR_RUNNING_CMD                (0x88)
-#define RMD_X8_TORQUE_CLOSED_LOOP_CMD           (0xA1)
-#define RMD_X8_SPEED_CLOSED_LOOP_CMD            (0xA2)
-#define RMD_X8_POSITION_CTRL_1_CMD              (0xA3)
-#define RMD_X8_POSITION_CTRL_2_CMD              (0xA4)
-#define RMD_X8_POSITION_CTRL_3_CMD              (0xA5)
-#define RMD_X8_POSITION_CTRL_4_CMD              (0xA6)
-
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
 /* Private variables -------------------------------------------------- */
 static uint8_t can_tx_data[8];
+static uint8_t can_rx_data[8];
+
+// Can send message structure
 static x8_can_msg_write_encode_offset_cmd_t msg_write_encode_offset_cmd;
 static x8_can_msg_speed_close_loop_cmd_t    msg_speed_close_loop_cmd;
 static x8_can_msg_torque_close_loop_cmd_t   msg_torque_close_loop_cmd;
@@ -54,8 +31,11 @@ static x8_can_msg_position_ctrl_2_cmd_t     msg_position_ctrl_2_cmd;
 static x8_can_msg_position_ctrl_3_cmd_t     msg_position_ctrl_3_cmd;
 static x8_can_msg_position_ctrl_4_cmd_t     msg_position_ctrl_4_cmd;
 
+// Can receive message structure
+static x8_can_receive_msg_motor_status_t    msg_receive_motor_status;
 
 /* Private function prototypes ---------------------------------------- */
+// Can pack transmit message
 static void m_x8_can_pack_msg_encode_offset_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_speed_close_loop_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_torque_close_loop_cmd(uint8_t *can_data);
@@ -63,6 +43,10 @@ static void m_x8_can_pack_msg_position_ctrl_1_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_2_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_3_cmd(uint8_t *can_data);
 static void m_x8_can_pack_msg_position_ctrl_4_cmd(uint8_t *can_data);
+
+// Can unpack receive message
+static void m_x8_can_unpack_msg_receive_motor_status(uint8_t *can_data);
+
 static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_handler);
 
 /* Function definitions ----------------------------------------------- */
@@ -166,6 +150,27 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t 
 
   // Can send message
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_4_CMD);
+}
+
+void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_status)
+{
+  // Unpack CAN data
+  m_x8_can_unpack_msg_receive_motor_status(can_rx_data);
+
+  // Get motor temperature
+  motor_status->temperature =  msg_receive_motor_status.temperature;
+
+  // Get motor torque current
+  motor_status->torque_current = (uint16_t(msg_receive_motor_status.iq_high) << 8) |
+                                           msg_receive_motor_status.iq_low;
+
+  // Get motor speed
+  motor_status->speed = (uint16_t(msg_receive_motor_status.speed_high) << 8) |
+                                  msg_receive_motor_status.speed_low;
+
+  // Get motor encoder
+  motor_status->encoder = (uint16_t(msg_receive_motor_status.encoder_high) << 8) |
+                                    msg_receive_motor_status.encoder_low;
 }
 
 /* Private function definitions --------------------------------------- */
@@ -314,6 +319,27 @@ static void m_x8_can_pack_msg_position_ctrl_4_cmd(uint8_t *can_data)
   can_data[5] = msg_position_ctrl_4_cmd.pos_ctrl_high;
   can_data[6] = msg_position_ctrl_4_cmd.data6;
   can_data[7] = msg_position_ctrl_4_cmd.data7;
+}
+
+/**
+ * @brief       Can unpack message position control command 4
+ *
+ * @param[in]   can_tx_data   Pointer to can tx data
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void m_x8_can_unpack_msg_receive_motor_status(uint8_t *can_data)
+{
+  msg_receive_motor_status.cmd_byte     = can_data[0];
+  msg_receive_motor_status.temperature  = can_data[1];
+  msg_receive_motor_status.iq_low       = can_data[2];
+  msg_receive_motor_status.iq_high      = can_data[3];
+  msg_receive_motor_status.speed_low    = can_data[4];
+  msg_receive_motor_status.speed_high   = can_data[5];
+  msg_receive_motor_status.encoder_low  = can_data[6];
+  msg_receive_motor_status.encoder_high = can_data[7];
 }
 
 /**
