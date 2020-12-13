@@ -32,7 +32,8 @@ static x8_can_msg_position_ctrl_3_cmd_t     msg_position_ctrl_3_cmd;
 static x8_can_msg_position_ctrl_4_cmd_t     msg_position_ctrl_4_cmd;
 
 // Can receive message structure
-static x8_can_receive_msg_motor_status_t    msg_receive_motor_status;
+static x8_can_receive_msg_motor_status_t      msg_receive_motor_status;
+static x8_can_receive_msg_multi_turn_angle_t  msg_receive_multi_turn_angle;
 
 /* Private function prototypes ---------------------------------------- */
 // Can pack transmit message
@@ -46,6 +47,7 @@ static void m_x8_can_pack_msg_position_ctrl_4_cmd(uint8_t *can_data);
 
 // Can unpack receive message
 static void m_x8_can_unpack_msg_receive_motor_status(uint8_t *can_data);
+static void m_x8_can_unpack_msg_receive_multi_turn_angle(uint8_t *can_data);
 
 static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_handler);
 
@@ -173,6 +175,21 @@ void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_stat
                                     msg_receive_motor_status.encoder_low;
 }
 
+void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, uint64_t *multi_turn_angle)
+{
+  // Unpack CAN data
+  m_x8_can_unpack_msg_receive_multi_turn_angle(can_rx_data);
+
+  // Get multi angle turn
+  *multi_turn_angle =  (uint64_t(msg_receive_multi_turn_angle.motor_angle_7) << 56) |
+                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_7) << 48) |
+                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_6) << 40) |
+                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_5) << 32) |
+                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_4) << 24) |
+                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_3) << 16) |
+                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_2) << 8 ) |
+                                 msg_receive_multi_turn_angle.motor_angle_low_1;
+}
 /* Private function definitions --------------------------------------- */
 /**
  * @brief       Can pack message encode offset command
@@ -340,6 +357,27 @@ static void m_x8_can_unpack_msg_receive_motor_status(uint8_t *can_data)
   msg_receive_motor_status.speed_high   = can_data[5];
   msg_receive_motor_status.encoder_low  = can_data[6];
   msg_receive_motor_status.encoder_high = can_data[7];
+}
+
+/**
+ * @brief       Can unpack message multi turn angle
+ *
+ * @param[in]   can_tx_data   Pointer to can tx data
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void m_x8_can_unpack_msg_receive_multi_turn_angle(uint8_t *can_data)
+{
+  msg_receive_multi_turn_angle.cmd_byte          = can_data[0];
+  msg_receive_multi_turn_angle.motor_angle_low_1 = can_data[1];
+  msg_receive_multi_turn_angle.motor_angle_2     = can_data[2];
+  msg_receive_multi_turn_angle.motor_angle_3     = can_data[3];
+  msg_receive_multi_turn_angle.motor_angle_4     = can_data[4];
+  msg_receive_multi_turn_angle.motor_angle_5     = can_data[5];
+  msg_receive_multi_turn_angle.motor_angle_6     = can_data[6];
+  msg_receive_multi_turn_angle.motor_angle_7     = can_data[7];
 }
 
 /**

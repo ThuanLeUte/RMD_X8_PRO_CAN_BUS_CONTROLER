@@ -239,6 +239,22 @@ typedef struct
 }
 x8_can_receive_msg_motor_status_t;
 
+/**
+ * @brief Can  receive message multi turn angle command
+ */
+typedef struct
+{
+  uint8_t cmd_byte;
+  uint8_t motor_angle_low_1;
+  uint8_t motor_angle_2;
+  uint8_t motor_angle_3;
+  uint8_t motor_angle_4;
+  uint8_t motor_angle_5;
+  uint8_t motor_angle_6;
+  uint8_t motor_angle_7;
+}
+x8_can_receive_msg_multi_turn_angle_t
+
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
