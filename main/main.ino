@@ -132,17 +132,17 @@ static void uart_receive_and_execute(void)
       if (CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 4, m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 60, m_float_data_value);
       }
       else if (COUNTER_CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run counter clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 4, -m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 60, -(int32_t)m_float_data_value);
       }
       else if (SET_SPEED_CMD == m_uart_cmd)
       {
         SERIAL.println("Set speed for motor run");
-        x8_can_send_speed_close_loop_cmd(&m_x8_can, (uitn32_t)m_float_data_value);
+        x8_can_send_speed_close_loop_cmd(&m_x8_can, (int32_t)m_float_data_value);
       } 
       else if (READ_MOTOR_STATUS_CMD == m_uart_cmd)
       {
@@ -177,7 +177,7 @@ static void m_can_receive(void)
 {
   uint8_t can_rx_len = 0;
   uint8_t can_rx_data[8];
-  uint64_t motor_multi_angle = 0;
+  int64_t motor_multi_angle = 0;
   x8_motor_status_t motor_status;
 
   // Check CAN data comming
@@ -219,7 +219,7 @@ static void m_can_receive(void)
     {
       x8_can_get_motor_multi_turn_angle(can_rx_data, &motor_multi_angle);
       SERIAL.print("Motor multi turn angle:");
-      SERIAL.println(motor_multi_angle);
+      SERIAL.println((int)motor_multi_angle);
       break;
     }
     
