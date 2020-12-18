@@ -105,9 +105,9 @@ x8_motor_dir_type_t;
  */
 typedef struct
 {
-  uint8_t   temperature;
-  uint16_t  torque_current;
-  uint16_t  speed;
+  int8_t    temperature;
+  int16_t   torque_current;
+  int16_t   speed;
   uint16_t  encoder;
 }
 x8_motor_status_t;
@@ -253,7 +253,7 @@ typedef struct
   uint8_t motor_angle_6;
   uint8_t motor_angle_7;
 }
-x8_can_receive_msg_multi_turn_angle_t
+x8_can_receive_msg_multi_turn_angle_t;
 
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
@@ -280,7 +280,7 @@ void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset);
  *
  * @return      None
  */
-void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque);
+void x8_can_send_torque_close_loop_cmd(x8_can_t *me , int16_t torque);
 
 /**
  * @brief       Can send speed close loop cmd
@@ -292,7 +292,7 @@ void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque);
  *
  * @return      None
  */
-void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed);
+void x8_can_send_speed_close_loop_cmd(x8_can_t *me , int32_t speed);
 
 /**
  * @brief       Can send position control cmd 1
@@ -304,7 +304,7 @@ void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed);
  *
  * @return      None
  */
-void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl);
+void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , int32_t pos_ctrl);
 
 /**
  * @brief       Can send position control cmd 2
@@ -317,7 +317,7 @@ void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl);
  *
  * @return      None
  */
-void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, uint32_t pos_ctrl);
+void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, int32_t pos_ctrl);
 
 /**
  * @brief       Can send position control cmd 3
@@ -347,6 +347,28 @@ void x8_can_send_position_ctrl_3_cmd(x8_can_t *me , uint16_t pos_ctrl,  x8_motor
 void x8_can_send_position_ctrl_4_cmd(x8_can_t *me ,uint16_t pos_ctrl, uint16_t speed_limited, x8_motor_dir_type_t dir);
 
 /**
+ * @brief       Can send get motor status
+ *
+ * @param[in]   me              Pointer to can handler
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_send_get_motor_status(x8_can_t *me);
+
+/**
+ * @brief       Can send get motor multi turns angle
+ *
+ * @param[in]   me              Pointer to can handler
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_send_get_motor_multi_turn_angle(x8_can_t *me);
+
+/**
  * @brief       Get motor status
  *
  * @param[in]   can_rx_data       Pointer to can rx data
@@ -357,6 +379,18 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me ,uint16_t pos_ctrl, uint16_t s
  * @return      None
  */
 void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_status);
+
+/**
+ * @brief       Get motor multi turn angle
+ *
+ * @param[in]   can_rx_data       Pointer to can rx data
+ *              multi_turn_angle  Pointer to motor multi turn angle
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn_angle);
 
 #endif // __X8_CAN_H
 

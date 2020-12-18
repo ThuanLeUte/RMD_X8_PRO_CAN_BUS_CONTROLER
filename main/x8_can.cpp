@@ -62,7 +62,7 @@ void x8_can_send_encoder_offset_cmd(x8_can_t *me , uint16_t encoder_offset)
   m_x8_can_send_msg(me, X8_MSG_WRITE_ENCODER_OFFSET_CMD);
 }
 
-void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque)
+void x8_can_send_torque_close_loop_cmd(x8_can_t *me , int16_t torque)
 {
   // Torque close loop
   msg_torque_close_loop_cmd.torque_current_low   = torque;
@@ -72,10 +72,13 @@ void x8_can_send_torque_close_loop_cmd(x8_can_t *me , uint16_t torque)
   m_x8_can_send_msg(me, X8_MSG_TORQUE_CLOSED_LOOP_CMD);
 }
 
-void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed)
+void x8_can_send_speed_close_loop_cmd(x8_can_t *me , int32_t speed)
 {
-  // Covert 0.01dps/LSB to rpm
-  speed = speed * 36000;
+  // Cover rpm to dps
+  speed = speed * 360;
+
+  // Cover 1dsp/LSB to 0.01dsp/LSB
+  speed = speed * 100;
 
   // Speed close loop
   msg_speed_close_loop_cmd.speed_ctrl_lowest   = speed;
@@ -87,9 +90,9 @@ void x8_can_send_speed_close_loop_cmd(x8_can_t *me , uint32_t speed)
   m_x8_can_send_msg(me, X8_MSG_SPEED_CLOSED_LOOP_CMD);
 }
 
-void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl)
+void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , int32_t pos_ctrl)
 {
-  // Convert 0.01 degree to 1 degree
+  // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
 
   // Motor positon control
@@ -102,12 +105,12 @@ void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , uint32_t pos_ctrl)
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_1_CMD);
 }
 
-void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, uint32_t pos_ctrl)
+void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, int32_t pos_ctrl)
 {
-  // Covert 0.01dps/LSB to rpm
-  speed_limited = speed_limited * 36000;
+  // Cover rps to dps
+  speed_limited = speed_limited * 360;
 
-  // Convert 0.01 degree to 1 degree
+  // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
 
   // Motor speed limited
@@ -124,8 +127,11 @@ void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, uint
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_2_CMD);
 }
 
-void x8_can_send_position_ctrl_3_cmd(x8_can_t *me , uint16_t pos_ctrl,  x8_motor_dir_type_t dir)
+void x8_can_send_position_ctrl_3_cmd(x8_can_t *me , uint16_t pos_ctrl, x8_motor_dir_type_t dir)
 {
+  // Convert 1degree/LSB to 0.01degree/LSB
+  pos_ctrl = pos_ctrl * 100;
+
   // Motor direction
   msg_position_ctrl_3_cmd.spin_dir = dir;
   
@@ -139,6 +145,12 @@ void x8_can_send_position_ctrl_3_cmd(x8_can_t *me , uint16_t pos_ctrl,  x8_motor
 
 void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t speed_limited, x8_motor_dir_type_t dir)
 {
+  // Cover rpm to dps
+  speed_limited = speed_limited * 360;
+
+  // Convert 1degree/LSB to 0.01degree/LSB
+  pos_ctrl = pos_ctrl * 100;
+
   // Motor direction
   msg_position_ctrl_4_cmd.spin_dir = dir;
 
@@ -154,42 +166,61 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t 
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_4_CMD);
 }
 
+void x8_can_send_get_motor_status(x8_can_t *me)
+{
+  // Can send message
+  m_x8_can_send_msg(me, X8_MSG_READ_MOTOR_STATUS_2_CMD);
+}
+
+void x8_can_send_get_motor_multi_turn_angle(x8_can_t *me)
+{
+  // Can send message
+  m_x8_can_send_msg(me, X8_MSG_READ_MULTI_TURNS_ANGLE_CMD);
+}
+
 void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_status)
 {
   // Unpack CAN data
   m_x8_can_unpack_msg_receive_motor_status(can_rx_data);
 
   // Get motor temperature
-  motor_status->temperature =  msg_receive_motor_status.temperature;
+  motor_status->temperature =  (int8_t)msg_receive_motor_status.temperature;
 
   // Get motor torque current
-  motor_status->torque_current = (uint16_t(msg_receive_motor_status.iq_high) << 8) |
+  motor_status->torque_current = (int16_t(msg_receive_motor_status.iq_high) << 8) |
                                            msg_receive_motor_status.iq_low;
 
   // Get motor speed
-  motor_status->speed = (uint16_t(msg_receive_motor_status.speed_high) << 8) |
+  motor_status->speed = (int16_t(msg_receive_motor_status.speed_high) << 8) |
                                   msg_receive_motor_status.speed_low;
 
   // Get motor encoder
   motor_status->encoder = (uint16_t(msg_receive_motor_status.encoder_high) << 8) |
                                     msg_receive_motor_status.encoder_low;
+
+  // Cover dps to rpm
+  motor_status->speed =  motor_status->speed / 360;
 }
 
-void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, uint64_t *multi_turn_angle)
+void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn_angle)
 {
   // Unpack CAN data
   m_x8_can_unpack_msg_receive_multi_turn_angle(can_rx_data);
 
   // Get multi angle turn
-  *multi_turn_angle =  (uint64_t(msg_receive_multi_turn_angle.motor_angle_7) << 56) |
-                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_7) << 48) |
-                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_6) << 40) |
-                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_5) << 32) |
-                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_4) << 24) |
-                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_3) << 16) |
-                       (uint64_t(msg_receive_multi_turn_angle.motor_angle_2) << 8 ) |
+  *multi_turn_angle =  (int64_t(msg_receive_multi_turn_angle.motor_angle_7) << 56) |
+                       (int64_t(msg_receive_multi_turn_angle.motor_angle_7) << 48) |
+                       (int64_t(msg_receive_multi_turn_angle.motor_angle_6) << 40) |
+                       (int64_t(msg_receive_multi_turn_angle.motor_angle_5) << 32) |
+                       (int64_t(msg_receive_multi_turn_angle.motor_angle_4) << 24) |
+                       (int64_t(msg_receive_multi_turn_angle.motor_angle_3) << 16) |
+                       (int64_t(msg_receive_multi_turn_angle.motor_angle_2) << 8 ) |
                                  msg_receive_multi_turn_angle.motor_angle_low_1;
+
+  // Convert 0.01degree/LSB to 1degree/LSB
+  *multi_turn_angle = *multi_turn_angle / 100;
 }
+
 /* Private function definitions --------------------------------------- */
 /**
  * @brief       Can pack message encode offset command
@@ -426,6 +457,18 @@ static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_h
   case X8_MSG_POSITION_CTRL_4_CMD:
   {
     m_x8_can_pack_msg_position_ctrl_4_cmd(can_tx_data);
+    break;
+  }
+
+  case X8_MSG_READ_MOTOR_STATUS_2_CMD:
+  {
+    can_tx_data[0] = RMD_X8_READ_MOTOR_STATUS_2_CMD;
+    break;
+  }
+
+  case X8_MSG_READ_MULTI_TURNS_ANGLE_CMD:
+  {
+    can_tx_data[0] = RMD_X8_READ_MULTI_TURNS_ANGLE_CMD;
     break;
   }
 

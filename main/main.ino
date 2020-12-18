@@ -42,9 +42,11 @@
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
 /* Private constan ---------------------------------------------------- */
-static const String CLOCKWISE_CMD          = "TL";
-static const String COUNTER_CLOCKWISE_CMD  = "TR";
-static const String SET_SPEED              = "SP";
+static const String SET_SPEED_CMD              = "SP";
+static const String CLOCKWISE_CMD              = "TL";
+static const String COUNTER_CLOCKWISE_CMD      = "TR";
+static const String READ_MOTOR_STATUS_CMD      = "MS";
+static const String READ_MULTI_TURN_ANGLE_CMD  = "MT";
 
 /* Private variables -------------------------------------------------- */
 MCP_CAN CAN(SPI_CS_PIN);
@@ -137,11 +139,25 @@ static void uart_receive_and_execute(void)
         SERIAL.println("Set motor run counter clockwise");
         x8_can_send_position_ctrl_2_cmd(&m_x8_can, 4, -m_float_data_value);
       }
-      else if (SET_SPEED == m_uart_cmd)
+      else if (SET_SPEED_CMD == m_uart_cmd)
       {
         SERIAL.println("Set speed for motor run");
-        x8_can_send_speed_close_loop_cmd(&m_x8_can, m_float_data_value);
+        x8_can_send_speed_close_loop_cmd(&m_x8_can, (uitn32_t)m_float_data_value);
       } 
+      else if (READ_MOTOR_STATUS_CMD == m_uart_cmd)
+      {
+        SERIAL.println("Get motor status");
+        x8_can_send_get_motor_status(&m_x8_can);
+      }
+      else if (READ_MULTI_TURN_ANGLE_CMD == m_uart_cmd)
+      {
+        SERIAL.println("Get motor multi turns angle");
+        x8_can_send_get_motor_multi_turn_angle(&m_x8_can);
+      }
+      else
+      {
+        
+      }
 
       m_uart_data_receive = "";
     }
@@ -161,6 +177,7 @@ static void m_can_receive(void)
 {
   uint8_t can_rx_len = 0;
   uint8_t can_rx_data[8];
+  uint64_t motor_multi_angle = 0;
   x8_motor_status_t motor_status;
 
   // Check CAN data comming
@@ -190,11 +207,19 @@ static void m_can_receive(void)
       SERIAL.print("Motor torqe current: ");
       SERIAL.println(motor_status.torque_current);
 
-      SERIAL.print("Motor speed: ");
+      SERIAL.print("Motor speed rpm: ");
       SERIAL.println(motor_status.speed);
 
       SERIAL.print("Motor encoder: ");
       SERIAL.println(motor_status.encoder);
+      break;
+    }
+
+    case RMD_X8_READ_MULTI_TURNS_ANGLE_CMD:
+    {
+      x8_can_get_motor_multi_turn_angle(can_rx_data, &motor_multi_angle);
+      SERIAL.print("Motor multi turn angle:");
+      SERIAL.println(motor_multi_angle);
       break;
     }
     
