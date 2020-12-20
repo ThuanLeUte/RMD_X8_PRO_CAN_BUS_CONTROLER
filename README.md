@@ -1,13 +1,21 @@
-# RMD_X8_PRO_CAN_BUS_CONTROLER
+# I. RMD_X8_PRO_CAN_BUS_CONTROLER
 Control RMD X8 PRO motor by CAN
 
-# COMMAND TO SET AND READ MOTOR STATUS
+# II. COMMAND TO SET AND READ MOTOR STATUS
 
-# 1. Setting command
- # SP_100  : Set speed 100 revolutions per minute (rpm)
- # TL_450  : Turn clockwise 450 degree
- # TR_180  : Turn counter clockwise 180 degree
+## 1. Setting command
+ ### SP_100  : Set speed 100 revolutions per minute (rpm)
+ ### TL_450  : Turn clockwise 450 degree
+ ### TR_180  : Turn counter clockwise 180 degree
 
-# 2. Reading command
- # MS      : Read motor status
- # MT      : Read motor multi turn angle
+## 2. Reading command
+ ### MS      : Read motor status
+ Expected output:
+ #### + Motor temperature: temperature value
+ #### + Motor torqe current: torque current value
+ #### + Motor speed rpm: speed value
+ #### + Motor encoder: encoder value
+
+ ### MT      : Read motor multi turn angle
+ Expected output:
+ #### + Motor multi turn angle: angle value

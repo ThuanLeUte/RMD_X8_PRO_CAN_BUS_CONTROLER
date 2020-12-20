@@ -132,12 +132,12 @@ static void uart_receive_and_execute(void)
       if (CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 60, m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 200, m_float_data_value);
       }
       else if (COUNTER_CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run counter clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 60, -(int32_t)m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 200, -(int32_t)m_float_data_value);
       }
       else if (SET_SPEED_CMD == m_uart_cmd)
       {
