@@ -202,8 +202,8 @@ void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_stat
                                     msg_receive_motor_status.encoder_low;
 
   // Cover dps to rpm
-  motor_status->speed =  motor_status->speed / 360;
   motor_status->speed =  motor_status->speed * 60;
+  motor_status->speed =  motor_status->speed / 360;
 }
 
 void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn_angle)
