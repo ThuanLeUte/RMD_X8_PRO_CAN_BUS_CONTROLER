@@ -76,6 +76,7 @@ void x8_can_send_speed_close_loop_cmd(x8_can_t *me , int32_t speed)
 {
   // Cover rpm to dps
   speed = speed * 360;
+  speed = speed / 60;
 
   // Cover 1dsp/LSB to 0.01dsp/LSB
   speed = speed * 100;
@@ -107,8 +108,9 @@ void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , int32_t pos_ctrl)
 
 void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, int32_t pos_ctrl)
 {
-  // Cover rps to dps
+  // Cover rpm to dps
   speed_limited = speed_limited * 360;
+  speed_limited = speed_limited / 60;
 
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
@@ -147,6 +149,7 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t 
 {
   // Cover rpm to dps
   speed_limited = speed_limited * 360;
+  speed_limited = speed_limited  / 60;
 
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
@@ -200,6 +203,7 @@ void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_stat
 
   // Cover dps to rpm
   motor_status->speed =  motor_status->speed / 360;
+  motor_status->speed =  motor_status->speed * 60;
 }
 
 void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn_angle)
