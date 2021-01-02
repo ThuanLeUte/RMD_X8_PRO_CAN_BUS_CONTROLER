@@ -113,12 +113,9 @@ void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, int3
   speed_limited = speed_limited * 360;
   speed_limited = speed_limited / 60;
 
-  Serial.println(pos_ctrl);
-
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
-
-  Serial.println(pos_ctrl);
+  pos_ctrl = pos_ctrl * 6;
 
   // Motor speed limited
   msg_position_ctrl_2_cmd.speed_limited_low  = speed_limited;
@@ -228,6 +225,7 @@ void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn
 
   // Convert 0.01degree/LSB to 1degree/LSB
   *multi_turn_angle = *multi_turn_angle / 100;
+  *multi_turn_angle = *multi_turn_angle / 6;
 }
 
 /* Private function definitions --------------------------------------- */
