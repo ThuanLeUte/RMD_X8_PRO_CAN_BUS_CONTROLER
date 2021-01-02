@@ -13,6 +13,7 @@
 
 /* Includes ----------------------------------------------------------- */
 #include "x8_can.h"
+#include "Arduino.h"
 
 /* Private defines ---------------------------------------------------- */
 /* Private enumerate/structure ---------------------------------------- */
@@ -112,8 +113,12 @@ void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, int3
   speed_limited = speed_limited * 360;
   speed_limited = speed_limited / 60;
 
+  Serial.println(pos_ctrl);
+
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
+
+  Serial.println(pos_ctrl);
 
   // Motor speed limited
   msg_position_ctrl_2_cmd.speed_limited_low  = speed_limited;

@@ -132,12 +132,12 @@ static void uart_receive_and_execute(void)
       if (CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 200, m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 360, m_float_data_value);
       }
       else if (COUNTER_CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run counter clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 200, -(int32_t)m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 360, -(int32_t)m_float_data_value);
       }
       else if (SET_SPEED_CMD == m_uart_cmd)
       {
@@ -193,19 +193,19 @@ static void m_can_receive(void)
     case RMD_X8_READ_MOTOR_STATUS_2_CMD:
     case RMD_X8_TORQUE_CLOSED_LOOP_CMD:
     case RMD_X8_SPEED_CLOSED_LOOP_CMD:
-    case RMD_X8_POSITION_CTRL_1_CMD:
-    case RMD_X8_POSITION_CTRL_2_CMD:
-    case RMD_X8_POSITION_CTRL_3_CMD:
-    case RMD_X8_POSITION_CTRL_4_CMD:
+    // case RMD_X8_POSITION_CTRL_1_CMD:
+    // case RMD_X8_POSITION_CTRL_2_CMD:
+    // case RMD_X8_POSITION_CTRL_3_CMD:
+    // case RMD_X8_POSITION_CTRL_4_CMD:
     {
       // Get motor status
       x8_can_get_motor_status(can_rx_data, &motor_status);
 
-      SERIAL.print("Motor temperature: ");
-      SERIAL.println(motor_status.temperature);
+      // SERIAL.print("Motor temperature: ");
+      // SERIAL.println(motor_status.temperature);
 
-      SERIAL.print("Motor torqe current: ");
-      SERIAL.println(motor_status.torque_current);
+      // SERIAL.print("Motor torqe current: ");
+      // SERIAL.println(motor_status.torque_current);
 
       SERIAL.print("Motor speed rpm: ");
       SERIAL.println(motor_status.speed);
