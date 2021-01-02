@@ -125,10 +125,10 @@ void x8_can_send_position_ctrl_2_cmd(x8_can_t *me , uint16_t speed_limited, int3
   msg_position_ctrl_2_cmd.speed_limited_high = speed_limited >> 8;
   
   // Motor positon control
-  msg_position_ctrl_2_cmd.pos_ctrl_lowest   = pos_ctrl;
-  msg_position_ctrl_2_cmd.pos_ctrl_low      = pos_ctrl >> 8;
-  msg_position_ctrl_2_cmd.pos_ctrl_high     = pos_ctrl >> 16;
-  msg_position_ctrl_2_cmd.pos_ctrl_highest  = pos_ctrl >> 24;
+  msg_position_ctrl_2_cmd.pos_ctrl_lowest   = *(uint8_t *)(&pos_ctrl);
+  msg_position_ctrl_2_cmd.pos_ctrl_low      = *((uint8_t *)(&pos_ctrl) + 1);
+  msg_position_ctrl_2_cmd.pos_ctrl_high     = *((uint8_t *)(&pos_ctrl) + 2);
+  msg_position_ctrl_2_cmd.pos_ctrl_highest  = *((uint8_t *)(&pos_ctrl) + 3);
 
   // Can send message
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_2_CMD);
