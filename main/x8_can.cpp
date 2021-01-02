@@ -35,6 +35,8 @@ static x8_can_msg_position_ctrl_4_cmd_t     msg_position_ctrl_4_cmd;
 // Can receive message structure
 static x8_can_receive_msg_motor_status_t      msg_receive_motor_status;
 static x8_can_receive_msg_multi_turn_angle_t  msg_receive_multi_turn_angle;
+static x8_can_receive_msg_pid_t               msg_receive_pid;
+
 
 /* Private function prototypes ---------------------------------------- */
 // Can pack transmit message
@@ -49,6 +51,7 @@ static void m_x8_can_pack_msg_position_ctrl_4_cmd(uint8_t *can_data);
 // Can unpack receive message
 static void m_x8_can_unpack_msg_receive_motor_status(uint8_t *can_data);
 static void m_x8_can_unpack_msg_receive_multi_turn_angle(uint8_t *can_data);
+static void m_x8_can_unpack_msg_receive_pid(uint8_t *can_data);
 
 static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_handler);
 
@@ -183,6 +186,12 @@ void x8_can_send_get_motor_multi_turn_angle(x8_can_t *me)
   m_x8_can_send_msg(me, X8_MSG_READ_MULTI_TURNS_ANGLE_CMD);
 }
 
+void x8_can_send_get_pid_data(x8_can_t *me)
+{
+  // Can send message
+  m_x8_can_send_msg(me, X8_MSG_READ_PID_DATA_CMD);
+}
+
 void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_status)
 {
   // Unpack CAN data
@@ -227,6 +236,21 @@ void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn
   *multi_turn_angle = *multi_turn_angle / 100;
   *multi_turn_angle = *multi_turn_angle / 6;
 }
+
+void x8_can_get_pid_data(uint8_t *can_rx_data, x8_motor_pid_data_t *motor_pid)
+{
+  // Unpack CAN data
+  m_x8_can_unpack_msg_receive_pid(can_rx_data);
+
+  // Get motor pid data
+  motor_pid->angle_kp   =  (uint8_t)msg_receive_pid.angle_kp;
+  motor_pid->angle_ki   =  (uint8_t)msg_receive_pid.angle_ki;
+  motor_pid->speed_kp   =  (uint8_t)msg_receive_pid.speed_kp;
+  motor_pid->speed_ki   =  (uint8_t)msg_receive_pid.speed_ki;
+  motor_pid->torque_kp  =  (uint8_t)msg_receive_pid.torque_kp;
+  motor_pid->torque_ki  =  (uint8_t)msg_receive_pid.torque_ki;
+}
+
 
 /* Private function definitions --------------------------------------- */
 /**
@@ -419,6 +443,28 @@ static void m_x8_can_unpack_msg_receive_multi_turn_angle(uint8_t *can_data)
 }
 
 /**
+ * @brief       Can unpack message pid
+ *
+ * @param[in]   can_tx_data   Pointer to can tx data
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+static void m_x8_can_unpack_msg_receive_pid(uint8_t *can_data)
+{
+  msg_receive_pid.cmd_byte     = can_data[0];
+  msg_receive_pid.data1        = can_data[1];
+  msg_receive_pid.angle_kp     = can_data[2];
+  msg_receive_pid.angle_ki     = can_data[3];
+  msg_receive_pid.speed_kp     = can_data[4];
+  msg_receive_pid.speed_ki     = can_data[5];
+  msg_receive_pid.torque_kp    = can_data[6];
+  msg_receive_pid.torque_ki    = can_data[7];
+}
+
+
+/**
  * @brief       Can send msg
  *
  * @param[in]   msg_handler   Message handler
@@ -476,6 +522,12 @@ static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_h
   case X8_MSG_READ_MULTI_TURNS_ANGLE_CMD:
   {
     can_tx_data[0] = RMD_X8_READ_MULTI_TURNS_ANGLE_CMD;
+    break;
+  }
+  
+  case X8_MSG_READ_PID_DATA_CMD:
+  {
+    can_tx_data[0] = RMD_X8_READ_PID_DATA_CMD;
     break;
   }
 

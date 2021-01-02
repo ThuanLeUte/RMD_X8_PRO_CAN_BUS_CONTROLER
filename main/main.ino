@@ -47,6 +47,8 @@ static const String CLOCKWISE_CMD              = "TL";
 static const String COUNTER_CLOCKWISE_CMD      = "TR";
 static const String READ_MOTOR_STATUS_CMD      = "MS";
 static const String READ_MULTI_TURN_ANGLE_CMD  = "MT";
+static const String READ_MOTOR_PID_CMD         = "PI";
+static const String READ_MOTOR_SPEED_CMD       = "RP";
 
 /* Private variables -------------------------------------------------- */
 MCP_CAN CAN(SPI_CS_PIN);
@@ -154,9 +156,10 @@ static void uart_receive_and_execute(void)
         SERIAL.println("Get motor multi turns angle");
         x8_can_send_get_motor_multi_turn_angle(&m_x8_can);
       }
-      else
+      else if (READ_MOTOR_PID_CMD == m_uart_cmd)
       {
-        
+        SERIAL.println("Get motor pid data");
+        x8_can_send_get_pid_data(&m_x8_can);
       }
 
       m_uart_data_receive = "";
@@ -179,6 +182,7 @@ static void m_can_receive(void)
   uint8_t can_rx_data[8];
   int64_t motor_multi_angle = 0;
   x8_motor_status_t motor_status;
+  x8_motor_pid_data_t motor_pid;
 
   // Check CAN data comming
   if (CAN_MSGAVAIL == CAN.checkReceive())
@@ -191,8 +195,8 @@ static void m_can_receive(void)
     switch (can_rx_data[0])
     {
     case RMD_X8_READ_MOTOR_STATUS_2_CMD:
-  //  case RMD_X8_TORQUE_CLOSED_LOOP_CMD:
-  //  case RMD_X8_SPEED_CLOSED_LOOP_CMD:
+    //  case RMD_X8_TORQUE_CLOSED_LOOP_CMD:
+    //  case RMD_X8_SPEED_CLOSED_LOOP_CMD:
     // case RMD_X8_POSITION_CTRL_1_CMD:
     // case RMD_X8_POSITION_CTRL_2_CMD:
     // case RMD_X8_POSITION_CTRL_3_CMD:
@@ -222,7 +226,30 @@ static void m_can_receive(void)
       SERIAL.println((int)motor_multi_angle);
       break;
     }
-    
+
+    case RMD_X8_READ_PID_DATA_CMD:
+    {
+      x8_can_get_pid_data(can_rx_data, &motor_pid);
+      SERIAL.print("Angle kp  :");
+      SERIAL.println(motor_pid.angle_kp);
+
+      SERIAL.print("Angle ki  :");
+      SERIAL.println(motor_pid.angle_ki);
+
+      SERIAL.print("Speed kp  :");
+      SERIAL.println(motor_pid.speed_kp);
+
+      SERIAL.print("Speed ki  :");
+      SERIAL.println(motor_pid.speed_ki);
+
+      SERIAL.print("Torque kp :");
+      SERIAL.println(motor_pid.torque_kp);
+
+      SERIAL.print("Torque ki :");
+      SERIAL.println(motor_pid.torque_ki);
+      break;
+    }
+
     default:
       break;
     }

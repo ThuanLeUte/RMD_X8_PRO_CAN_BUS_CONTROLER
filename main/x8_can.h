@@ -113,6 +113,20 @@ typedef struct
 x8_motor_status_t;
 
 /**
+ * @brief Motor pid data
+ */
+typedef struct
+{
+  uint8_t    angle_kp;
+  uint8_t    angle_ki;
+  uint8_t    speed_kp;
+  uint8_t    speed_ki;
+  uint8_t    torque_kp;
+  uint8_t    torque_ki;
+}
+x8_motor_pid_data_t;
+
+/**
  * @brief Can message encode offset command
  */
 typedef struct
@@ -240,7 +254,7 @@ typedef struct
 x8_can_receive_msg_motor_status_t;
 
 /**
- * @brief Can  receive message multi turn angle command
+ * @brief Can receive message multi turn angle command
  */
 typedef struct
 {
@@ -254,6 +268,22 @@ typedef struct
   uint8_t motor_angle_7;
 }
 x8_can_receive_msg_multi_turn_angle_t;
+
+/**
+ * @brief Can receive message pid data
+ */
+typedef struct
+{
+  uint8_t cmd_byte;
+  uint8_t data1;
+  uint8_t angle_kp;
+  uint8_t angle_ki;
+  uint8_t speed_kp;
+  uint8_t speed_ki;
+  uint8_t torque_kp;
+  uint8_t torque_ki;
+}
+x8_can_receive_msg_pid_t;
 
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
@@ -369,6 +399,17 @@ void x8_can_send_get_motor_status(x8_can_t *me);
 void x8_can_send_get_motor_multi_turn_angle(x8_can_t *me);
 
 /**
+ * @brief       Can send get pid data
+ *
+ * @param[in]   me              Pointer to can handler
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_send_get_pid_data(x8_can_t *me);
+
+/**
  * @brief       Get motor status
  *
  * @param[in]   can_rx_data       Pointer to can rx data
@@ -391,6 +432,18 @@ void x8_can_get_motor_status(uint8_t *can_rx_data, x8_motor_status_t *motor_stat
  * @return      None
  */
 void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn_angle);
+
+/**
+ * @brief       Get motor pid data
+ *
+ * @param[in]   can_rx_data       Pointer to can rx data
+ * @param[in]   motor_pid         Pointer to motor pid data
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_get_pid_data(uint8_t *can_rx_data, x8_motor_pid_data_t *motor_pid);
 
 #endif // __X8_CAN_H
 
