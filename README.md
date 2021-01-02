@@ -18,4 +18,13 @@ Control RMD X8 PRO motor by CAN
 
  ### MT      : Read motor multi turn angle
  Expected output:
- #### + Motor multi turn angle: angle value
+ #### + Motor multi turn angle: angle 
+ 
+ ### PI      : Read motor PID data
+ ####  Expected output:
+ #### Angle kp  :100
+ #### Angle ki  :100
+ #### Speed kp  :50
+ #### Speed ki  :40
+ #### Torque kp :50
+ #### Torque ki :50
