@@ -59,6 +59,7 @@ static String   m_uart_cmd              = "";
 static String   m_uart_data             = "";
 static boolean  m_uart_string_complete  = false;
 static float    m_float_data_value      = 0;
+static float    m_motor_speed           = 10;
 
 /* Private function prototypes ---------------------------------------- */
 static void uart_receive_and_execute(void);
@@ -134,17 +135,18 @@ static void uart_receive_and_execute(void)
       if (CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 360, m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, (uint16_t)m_motor_speed, m_float_data_value);
       }
       else if (COUNTER_CLOCKWISE_CMD == m_uart_cmd)
       {
         SERIAL.println("Set motor run counter clockwise");
-        x8_can_send_position_ctrl_2_cmd(&m_x8_can, 360, -(int32_t)m_float_data_value);
+        x8_can_send_position_ctrl_2_cmd(&m_x8_can, (uint16_t)m_motor_speed, -(int32_t)m_float_data_value);
       }
       else if (SET_SPEED_CMD == m_uart_cmd)
       {
         SERIAL.println("Set speed for motor run");
-        x8_can_send_speed_close_loop_cmd(&m_x8_can, (int32_t)m_float_data_value);
+        m_motor_speed = m_float_data_value;
+        x8_can_send_speed_close_loop_cmd(&m_x8_can, (int32_t)m_motor_speed);
       } 
       else if (READ_MOTOR_STATUS_CMD == m_uart_cmd)
       {
