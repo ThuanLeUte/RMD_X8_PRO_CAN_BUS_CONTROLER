@@ -99,6 +99,7 @@ void x8_can_send_position_ctrl_1_cmd(x8_can_t *me , int32_t pos_ctrl)
 {
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
+  pos_ctrl = pos_ctrl * 6;
 
   // Motor positon control
   msg_position_ctrl_1_cmd.pos_ctrl_lowest   = pos_ctrl;
@@ -138,6 +139,7 @@ void x8_can_send_position_ctrl_3_cmd(x8_can_t *me , uint16_t pos_ctrl, x8_motor_
 {
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
+  pos_ctrl = pos_ctrl * 6;
 
   // Motor direction
   msg_position_ctrl_3_cmd.spin_dir = dir;
@@ -158,6 +160,7 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t 
 
   // Convert 1degree/LSB to 0.01degree/LSB
   pos_ctrl = pos_ctrl * 100;
+  pos_ctrl = pos_ctrl * 6;
 
   // Motor direction
   msg_position_ctrl_4_cmd.spin_dir = dir;
