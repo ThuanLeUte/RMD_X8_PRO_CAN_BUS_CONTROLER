@@ -177,6 +177,35 @@ void x8_can_send_position_ctrl_4_cmd(x8_can_t *me , uint16_t pos_ctrl, uint16_t 
   m_x8_can_send_msg(me, X8_MSG_POSITION_CTRL_4_CMD);
 }
 
+
+void x8_can_send_motor_command(x8_can_t *me, x8_motor_command_t command)
+{
+  // Can send message
+  switch (command)
+  {
+  case MOTOR_OFF:
+  {
+    m_x8_can_send_msg(me, X8_MSG_MOTOR_OFF_CMD);
+    break;
+  }
+
+  case MOTOR_RUN:
+  {
+    m_x8_can_send_msg(me, X8_MSG_MOTOR_RUNNING_CMD);
+    break;
+  }
+
+  case MOTOR_STOP:
+  {
+    m_x8_can_send_msg(me, X8_MSG_MOTOR_STOP_CMD);
+    break;
+  }
+
+  default:
+    break;
+  }
+}
+
 void x8_can_send_get_motor_status(x8_can_t *me)
 {
   // Can send message
@@ -527,10 +556,28 @@ static void m_x8_can_send_msg(x8_can_t *me, x8_can_msg_handler_send_type_t msg_h
     can_tx_data[0] = RMD_X8_READ_MULTI_TURNS_ANGLE_CMD;
     break;
   }
-  
+
   case X8_MSG_READ_PID_DATA_CMD:
   {
     can_tx_data[0] = RMD_X8_READ_PID_DATA_CMD;
+    break;
+  }
+
+  case X8_MSG_MOTOR_OFF_CMD:
+  {
+    can_tx_data[0] = RMD_X8_MOTOR_OFF_CMD;
+    break;
+  }
+
+  case X8_MSG_MOTOR_STOP_CMD:
+  {
+    can_tx_data[0] = RMD_X8_MOTOR_STOP_CMD;
+    break;
+  }
+
+  case X8_MSG_MOTOR_RUNNING_CMD:
+  {
+    can_tx_data[0] = RMD_X8_MOTOR_RUNNING_CMD;
     break;
   }
 

@@ -101,6 +101,17 @@ typedef enum
 x8_motor_dir_type_t;
 
 /**
+ * @brief Motor command enum
+ */
+typedef enum
+{
+  MOTOR_OFF,
+  MOTOR_STOP,
+  MOTOR_RUN
+}
+x8_motor_command_t;
+
+/**
  * @brief Motor direction enum
  */
 typedef struct
@@ -444,6 +455,18 @@ void x8_can_get_motor_multi_turn_angle(uint8_t *can_rx_data, int64_t *multi_turn
  * @return      None
  */
 void x8_can_get_pid_data(uint8_t *can_rx_data, x8_motor_pid_data_t *motor_pid);
+
+/**
+ * @brief       Send motor command
+ *
+ * @param[in]   me                Pointer to can handler
+ * @param[in]   command           Motor command
+ *
+ * @attention   None
+ *
+ * @return      None
+ */
+void x8_can_send_motor_command(x8_can_t *me, x8_motor_command_t command);
 
 #endif // __X8_CAN_H
 
