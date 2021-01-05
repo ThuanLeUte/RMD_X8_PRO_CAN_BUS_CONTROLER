@@ -42,13 +42,21 @@
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
 /* Private constan ---------------------------------------------------- */
-static const String SET_SPEED_CMD              = "SP";
-static const String CLOCKWISE_CMD              = "TL";
-static const String COUNTER_CLOCKWISE_CMD      = "TR";
-static const String READ_MOTOR_STATUS_CMD      = "MS";
-static const String READ_MULTI_TURN_ANGLE_CMD  = "MT";
-static const String READ_MOTOR_PID_CMD         = "PI";
-static const String READ_MOTOR_SPEED_CMD       = "RP";
+static const String SET_SPEED_CMD               = "SP";
+static const String CLOCKWISE_CMD               = "TL";
+static const String COUNTER_CLOCKWISE_CMD       = "TR";
+static const String READ_MULTI_TURN_ANGLE_CMD   = "MT";
+
+static const String READ_SPEED_CMD              = "RP";
+static const String READ_ENCODER_CMD            = "RE";
+static const String READ_TEMP_CMD               = "RT";
+
+static const String READ_ANGLE_KP_CMD           = "AP";
+static const String READ_ANGLE_KI_CMD           = "AI";
+static const String READ_SPEED_KP_CMD           = "VP";
+static const String READ_SPEED_KI_CMD           = "VI";
+static const String READ_TORQUE_KP_CMD          = "TP";
+static const String READ_TORQUE_KI_CMD          = "TI";
 
 /* Private variables -------------------------------------------------- */
 MCP_CAN CAN(SPI_CS_PIN);
@@ -60,6 +68,17 @@ static String   m_uart_data             = "";
 static boolean  m_uart_string_complete  = false;
 static float    m_float_data_value      = 0;
 static float    m_motor_speed           = 10;
+
+static bool     m_get_angle_kp          = false;
+static bool     m_get_angle_ki          = false;
+static bool     m_get_speed_kp          = false;
+static bool     m_get_speed_ki          = false;
+static bool     m_get_torque_kp         = false;
+static bool     m_get_torque_ki         = false;
+
+static bool     m_get_speed             = false;
+static bool     m_get_encoder           = false;
+static bool     m_get_temp              = false;
 
 /* Private function prototypes ---------------------------------------- */
 static void uart_receive_and_execute(void);
@@ -148,20 +167,64 @@ static void uart_receive_and_execute(void)
         m_motor_speed = m_float_data_value;
         x8_can_send_speed_close_loop_cmd(&m_x8_can, (int32_t)m_motor_speed);
       } 
-      else if (READ_MOTOR_STATUS_CMD == m_uart_cmd)
-      {
-        SERIAL.println("Get motor status");
-        x8_can_send_get_motor_status(&m_x8_can);
-      }
       else if (READ_MULTI_TURN_ANGLE_CMD == m_uart_cmd)
       {
         SERIAL.println("Get motor multi turns angle");
         x8_can_send_get_motor_multi_turn_angle(&m_x8_can);
       }
-      else if (READ_MOTOR_PID_CMD == m_uart_cmd)
+      else if (READ_ANGLE_KP_CMD == m_uart_cmd)
       {
-        SERIAL.println("Get motor pid data");
+        m_get_angle_kp = true;
+        SERIAL.println("Get angle kp");
         x8_can_send_get_pid_data(&m_x8_can);
+      }
+      else if (READ_ANGLE_KI_CMD == m_uart_cmd)
+      {
+        m_get_angle_ki = true;
+        SERIAL.println("Get angle ki");
+        x8_can_send_get_pid_data(&m_x8_can);
+      }
+      else if (READ_SPEED_KP_CMD == m_uart_cmd)
+      {
+        m_get_speed_kp = true;
+        SERIAL.println("Get speed kp");
+        x8_can_send_get_pid_data(&m_x8_can);
+      }
+      else if (READ_SPEED_KI_CMD == m_uart_cmd)
+      {
+        m_get_speed_ki = true;
+        SERIAL.println("Get speed ki");
+        x8_can_send_get_pid_data(&m_x8_can);
+      }
+      else if (READ_TORQUE_KP_CMD == m_uart_cmd)
+      {
+        m_get_torque_kp = true;
+        SERIAL.println("Get torque kp");
+        x8_can_send_get_pid_data(&m_x8_can);
+      }
+      else if (READ_TORQUE_KI_CMD == m_uart_cmd)
+      {
+        m_get_torque_ki = true;
+        SERIAL.println("Get torque ki");
+        x8_can_send_get_pid_data(&m_x8_can);
+      }
+      else if (READ_SPEED_CMD == m_uart_cmd)
+      {
+        m_get_speed = true;
+        SERIAL.println("Get speed");
+        x8_can_send_get_motor_status(&m_x8_can);
+      }
+      else if (READ_ENCODER_CMD == m_uart_cmd)
+      {
+        m_get_encoder = true;
+        SERIAL.println("Get encoder");
+        x8_can_send_get_motor_status(&m_x8_can);
+      }
+      else if (READ_TEMP_CMD == m_uart_cmd)
+      {
+        m_get_temp = true;
+        SERIAL.println("Get temperature");
+        x8_can_send_get_motor_status(&m_x8_can);
       }
 
       m_uart_data_receive = "";
@@ -207,17 +270,27 @@ static void m_can_receive(void)
       // Get motor status
       x8_can_get_motor_status(can_rx_data, &motor_status);
 
+      if (m_get_temp)
+      {
        SERIAL.print("Motor temperature: ");
        SERIAL.println(motor_status.temperature);
+      }
 
-       SERIAL.print("Motor torqe current: ");
-       SERIAL.println(motor_status.torque_current);
+      if (m_get_speed)
+      {
+        SERIAL.print("Motor speed rpm: ");
+        SERIAL.println(motor_status.speed);
+      }
 
-      SERIAL.print("Motor speed rpm: ");
-      SERIAL.println(motor_status.speed);
+      if (m_get_encoder)
+      {
+        SERIAL.print("Motor encoder: ");
+        SERIAL.println(motor_status.encoder);
+      }
+      m_get_temp    = false;
+      m_get_speed   = false;
+      m_get_encoder = false;
 
-      SERIAL.print("Motor encoder: ");
-      SERIAL.println(motor_status.encoder);
       break;
     }
 
@@ -232,23 +305,50 @@ static void m_can_receive(void)
     case RMD_X8_READ_PID_DATA_CMD:
     {
       x8_can_get_pid_data(can_rx_data, &motor_pid);
-      SERIAL.print("Angle kp  :");
-      SERIAL.println(motor_pid.angle_kp);
 
-      SERIAL.print("Angle ki  :");
-      SERIAL.println(motor_pid.angle_ki);
+      if (m_get_angle_kp)
+      {
+        SERIAL.print("Angle kp  :");
+        SERIAL.println(motor_pid.angle_kp);
+      }
 
-      SERIAL.print("Speed kp  :");
-      SERIAL.println(motor_pid.speed_kp);
+      if (m_get_angle_ki)
+      {
+        SERIAL.print("Angle ki  :");
+        SERIAL.println(motor_pid.angle_ki);
+      }
 
-      SERIAL.print("Speed ki  :");
-      SERIAL.println(motor_pid.speed_ki);
+      if (m_get_speed_kp)
+      {
+        SERIAL.print("Speed kp  :");
+        SERIAL.println(motor_pid.speed_kp);
+      }
 
-      SERIAL.print("Torque kp :");
-      SERIAL.println(motor_pid.torque_kp);
+      if (m_get_speed_ki)
+      {
+        SERIAL.print("Speed ki  :");
+        SERIAL.println(motor_pid.speed_ki);
+      }
 
-      SERIAL.print("Torque ki :");
-      SERIAL.println(motor_pid.torque_ki);
+      if (m_get_torque_kp)
+      {
+        SERIAL.print("Torque kp :");
+        SERIAL.println(motor_pid.torque_kp);
+      }
+
+      if (m_get_torque_ki)
+      {
+        SERIAL.print("Torque ki :");
+        SERIAL.println(motor_pid.torque_ki);
+      }
+
+      m_get_angle_kp  = false;
+      m_get_angle_ki  = false;
+      m_get_speed_kp  = false;
+      m_get_speed_ki  = false;
+      m_get_torque_kp = false;
+      m_get_torque_ki = false;
+
       break;
     }
 

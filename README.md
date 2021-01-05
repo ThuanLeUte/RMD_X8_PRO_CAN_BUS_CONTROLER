@@ -9,22 +9,15 @@ Control RMD X8 PRO motor by CAN
  ### TR_180  : Turn counter clockwise 180 degree
 
 ## 2. Reading command
- ### MS      : Read motor status
- Expected output:
- #### + Motor temperature: temperature value
- #### + Motor torqe current: torque current value
- #### + Motor speed rpm: speed value
- #### + Motor encoder: encoder value
-
  ### MT      : Read motor multi turn angle
- Expected output:
- #### + Motor multi turn angle: angle 
- 
- ### PI      : Read motor PID data
- ####  Expected output:
- #### Angle kp  :100
- #### Angle ki  :100
- #### Speed kp  :50
- #### Speed ki  :40
- #### Torque kp :50
- #### Torque ki :50
+ ### RP      : Read motor speed
+ ### RE      : Read motor encoder
+ ### RT      : Read motor temperature
+ ### AP      : Read angle kp
+ ### AI      : Read angle ki
+ ### VP      : Read speed kp
+ ### VI      : Read speed ki
+ ### TP      : Read torque kp
+ ### TI      : Read torque ki
+
+
